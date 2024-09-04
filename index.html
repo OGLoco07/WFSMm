@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatFieldSuitsMe</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            display: block;
+            margin: 20px auto;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .hidden {
+            display: none;
+        }
+        label, input, select, .option {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+        }
+        .fade-in {
+            animation: fadeIn 1s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container fade-in" id="welcome-page">
+        <h1>Welcome to WhatFieldSuitsMe</h1>
+        <p>This app helps students discover the best career paths based on their interests. Simply follow the steps to find out which field suits you best.</p>
+        <button onclick="nextPage('login-page')">Get Started</button>
+    </div>
+
+    <div class="container hidden fade-in" id="login-page">
+        <h2>Login Information</h2>
+        <form id="login-form">
+            <label for="name">Name:</label>
+            <input type="text" id="name" required>
+            
+            <label for="age">Age:</label>
+            <input type="number" id="age" required>
+            
+            <label for="gender">Gender:</label>
+            <select id="gender" required>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+            </select>
+            
+            <button type="button" onclick="nextPage('quiz-page')">Continue</button>
+        </form>
+    </div>
+
+    <div class="container hidden fade-in" id="quiz-page">
+        <h2>Quiz</h2>
+        <label for="interest">Select Your Interest:</label>
+        <select id="interest" onchange="loadQuestions()">
+            <option value="technology">Technology</option>
+            <option value="arts">Arts</option>
+            <option value="science">Science</option>
+            <option value="business">Business</option>
+            <option value="health">Health</option>
+        </select>
+        
+        <div id="question-container" class="hidden">
+            <p id="question"></p>
+            <div class="option" onclick="answerQuestion(0)" id="option1"></div>
+            <div class="option" onclick="answerQuestion(1)" id="option2"></div>
+            <div class="option" onclick="answerQuestion(2)" id="option3"></div>
+            <div class="option" onclick="answerQuestion(3)" id="option4"></div>
+        </div>
+
+        <button type="button" id="next-button" class="hidden" onclick="showResult()">Show Result</button>
+    </div>
+
+    <div class="container hidden fade-in" id="result-page">
+        <h2>Result</h2>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        let score = 0;
+        let currentQuestion = 0;
+        const totalQuestions = 5; // Total number of questions per interest
+
+        const questions = {
+            technology: [
+                { q: "What does HTML stand for?", options: ["Hypertext Markup Language", "Hyperlink and Text Markup Language", "Home Tool Markup Language", "None of these"], answer: 0 },
+                { q: "What is the brain of the computer?", options: ["CPU", "RAM", "Hard Drive", "SSD"], answer: 0 },
+                { q: "What programming language is known for its use in web development?", options: ["JavaScript", "Python", "C++", "Java"], answer: 0 },
+                { q: "What is an example of an operating system?", options: ["Linux", "Chrome", "HTML", "USB"], answer: 0 },
+                { q: "Which is a widely used open-source version control system?", options: ["Git", "SVN", "Mercurial", "CVS"], answer: 0 },
+            ],
+            arts: [
+                { q: "What is the primary color?", options: ["Red", "Green", "Blue", "Yellow"], answer: 0 },
+                { q: "Who painted the Mona Lisa?", options: ["Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Claude Monet"], answer: 2 },
+                { q: "What art movement is Salvador Dalí associated with?", options: ["Surrealism", "Impressionism", "Cubism", "Expressionism"], answer: 0 },
+                { q: "Which instrument is primarily used in a symphony orchestra?", options: ["Violin", "Guitar", "Piano", "Drums"], answer: 0 },
+                { q: "What is the term for a painting done on wet plaster?", options: ["Fresco", "Mosaic", "Etching", "Collage"], answer: 0 },
+            ],
+            science: [
+                { q: "What planet is known as the Red Planet?", options: ["Earth", "Mars", "Jupiter", "Venus"], answer: 1 },
+                { q: "What is the chemical symbol for water?", options: ["H2O", "O2", "CO2", "NaCl"], answer: 0 },
+                { q: "What is the largest planet in our solar system?", options: ["Earth", "Jupiter", "Saturn", "Neptune"], answer: 1 },
+                { q: "What is the powerhouse of the cell?", options: ["Nucleus", "Ribosome", "Mitochondria", "Golgi apparatus"], answer: 2 },
+                { q: "What force keeps us grounded on Earth?", options: ["Magnetism", "Friction", "Gravity", "Inertia"], answer: 2 },
+            ],
+            business: [
+                { q: "What is the main goal of a business?", options: ["Maximize profits", "Minimize costs", "Improve customer satisfaction", "All of the above"], answer: 3 },
+                { q: "What does CEO stand for?", options: ["Chief Executive Officer", "Chief Energy Officer", "Chief Education Officer", "None of these"], answer: 0 },
+                { q: "Which financial statement shows a company's performance over a period?", options: ["Balance Sheet", "Income Statement", "Cash Flow Statement", "Budget"], answer: 1 },
+                { q: "What is a market economy?", options: ["An economy based on supply and demand", "An economy controlled by the government", "An economy with no trade", "None of the above"], answer: 0 },
+                { q: "What is a SWOT analysis?", options: ["Strengths, Weaknesses, Opportunities, Threats", "Sales, Work, Operations, Tactics", "Strategies, Wins, Objectives, Targets", "None of these"], answer: 0 },
+            ],
+            health: [
+                { q: "Which vitamin is produced when a person is exposed to sunlight?", options: ["Vitamin A", "Vitamin B", "Vitamin C", "Vitamin D"], answer: 3 },
+                { q: "What is a common blood type?", options: ["A+", "O-", "B-", "AB+"], answer: 0 },
+                { q: "What organ is responsible for pumping blood throughout the body?", options: ["Liver", "Lungs", "Heart", "Kidneys"], answer: 2 },
+                { q: "What is the largest organ in the human body?", options: ["Skin", "Liver", "Heart", "Brain"], answer: 0 },
+                { q: "What is the medical term for high blood pressure?", options: ["Hypertension", "Hypotension", "Tachycardia", "Bradycardia"], answer: 0 },
+            ]
+        };
+
+        function nextPage(pageId) {
+            document.querySelector('.container:not(.hidden)').classList.add('hidden');
+            document.getElementById(pageId).classList.remove('hidden');
+        }
+
+        function loadQuestions() {
+            const interest = document.getElementById('interest').value;
+            currentQuestion = 0;
+            score = 0;
+            showQuestion(interest);
+        }
+
+        function showQuestion(interest) {
+            const questionContainer = document.getElementById('question-container');
+            const questionData = questions[interest][currentQuestion];
+            document.getElementById('question').textContent = questionData.q;
+            document.getElementById('option1').textContent = questionData.options[0];
+            document.getElementById('option2').textContent = questionData.options[1];
+            document.getElementById('option3').textContent = questionData.options[2];
+            document.getElementById('option4').textContent = questionData.options[3];
+            questionContainer.classList.remove('hidden');
+        }
+
+        function answerQuestion(selectedOption) {
+            const interest = document.getElementById('interest').value;
+            if (selectedOption === questions[interest][currentQuestion].answer) {
+                score += (100 / totalQuestions);
+            }
+            currentQuestion++;
+            if (currentQuestion < questions[interest].length) {
+                showQuestion(interest);
+            } else {
+                document.getElementById('next-button').classList.remove('hidden');
+                document.getElementById('question-container').classList.add('hidden');
+            }
+        }
+
+        function showResult() {
+            const name = document.getElementById('name').value;
+            const interest = document.getElementById('interest').value;
+            let suggestion = '';
+
+            if (score >= 60) {
+                suggestion = `Congratulations ${name}, you scored ${score.toFixed(0)}%! You are well-suited for a career in ${interest}!`;
+            } else {
+                suggestion = `Hello ${name}, you scored ${score.toFixed(0)}%. You might want to explore other fields to find your best fit.`;
+            }
+
+            document.getElementById('result').innerHTML = `<p>${suggestion}</p>`;
+            nextPage('result-page');
+        }
+    </script>
+</body>
+</html>
