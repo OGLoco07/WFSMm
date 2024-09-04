@@ -87,6 +87,7 @@
         <h2>Quiz</h2>
         <label for="interest">Select Your Interest:</label>
         <select id="interest" onchange="loadQuestions()">
+            <option value="">--Select--</option>
             <option value="technology">Technology</option>
             <option value="arts">Arts</option>
             <option value="science">Science</option>
@@ -160,9 +161,11 @@
 
         function loadQuestions() {
             const interest = document.getElementById('interest').value;
-            currentQuestion = 0;
-            score = 0;
-            showQuestion(interest);
+            if (interest) {
+                currentQuestion = 0;
+                score = 0;
+                showQuestion(interest);
+            }
         }
 
         function showQuestion(interest) {
